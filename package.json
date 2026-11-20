@@ -1,0 +1,7 @@
+{
+  "name": "noolchee",
+  "private": true,
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260501.0"
+  }
+}

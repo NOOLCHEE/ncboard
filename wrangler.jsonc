@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ncboard",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-04-01",
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-web-db",
+      "database_id": "d0d78bb9-e6a5-455a-a7c0-a474bcb913a8"
+    }
+  ]
+}
