@@ -1647,12 +1647,23 @@
               sel.addRange(nextRange);
             } else {
               document.execCommand('fontSize', false, '7');
+              const createdSpans = [];
               canvasEl.querySelectorAll('font[size="7"]').forEach((fontEl) => {
                 const span = document.createElement('span');
                 span.style.fontSize = size;
                 while (fontEl.firstChild) span.appendChild(fontEl.firstChild);
                 fontEl.replaceWith(span);
+                createdSpans.push(span);
               });
+              // font를 span으로 바꾸면 기존 선택 영역이 사라지므로, 바뀐 글자를 다시 선택해 둡니다.
+              // (안 그러면 크기를 바꾼 뒤 굵게/글자색/배경색이 적용되지 않음)
+              if (sel && createdSpans.length > 0) {
+                const reselect = document.createRange();
+                reselect.setStartBefore(createdSpans[0]);
+                reselect.setEndAfter(createdSpans[createdSpans.length - 1]);
+                sel.removeAllRanges();
+                sel.addRange(reselect);
+              }
             }
             ed.openPopover = null;
             syncDoc();
@@ -2030,7 +2041,12 @@
     if (!ed || !ed.openPopover) return;
     const tb = document.getElementById('rich-toolbar');
     const linkBar = document.getElementById('rich-link-bar');
-    if (tb && !tb.contains(e.target) && (!linkBar || !linkBar.contains(e.target))) {
+    // 툴바 버튼을 누르면 renderToolbar()가 버튼을 DOM에서 떼어내므로 e.target.contains()로는
+    // 툴바 안쪽 클릭을 알 수 없습니다. 이벤트 경로(composedPath)로 판별해야 팝업이 바로 닫히지 않습니다.
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+    const insideToolbar = !!tb && (path.includes(tb) || tb.contains(e.target));
+    const insideLinkBar = !!linkBar && (path.includes(linkBar) || linkBar.contains(e.target));
+    if (tb && !insideToolbar && !insideLinkBar) {
       ed.openPopover = null;
       const openPops = tb.querySelectorAll('.tb-popover');
       openPops.forEach((p) => p.remove());
